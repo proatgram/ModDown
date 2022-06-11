@@ -1,0 +1,59 @@
+# Includes
+include(FindDoxygen)
+## Sets the project variables ##
+cmake_minimum_required(VERSION 3.16)
+EXECUTE_PROCESS (COMMAND getconf LONG_BIT COMMAND tr -d '\n' OUTPUT_VARIABLE ARCH)
+EXECUTE_PROCESS (COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE PCT)
+if (${PCT} STREQUAL "x86_64")
+	set (ARCHITECTURE "amd64")
+elseif(${PCT} STREQUAL "i386")
+	set (ARCHITECTURE "i386")
+elseif(${PCT} STREQUAL "arm")
+	set (ARCHITECTURE "arm${ARCH}")
+else()
+	message(FATAL_ERROR "Unknown Architecture type.")
+endif()
+message(STATUS "Detected architecture: ${ARCHITECTURE}")
+
+project (ModDown VERSION 0.1)
+set (CMAKE_BUILD_TYPE Debug)
+
+set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD_REQUIRED True)
+
+set(CMAKE_ECLIPSE_VERSION 4.23.0)
+# CPack variables
+# CPack variables
+set (CPACK_GENERATOR "TGZ" "DEB" "RPM")
+#set (CMAKE_PROJECT_HOMEPAGE_URLE "https://github.com/proatgram/libmount-cpp")
+#set (CPACK_PACKAGE_DESCRIPTION "An snapy tool for snap packages")
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY ${CPACK_PACKAGE_DESCRIPTION})
+set (CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+set (CPACK_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
+set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${ARCHITECTURE}")
+set (CPACK_PACKAGE_CONTACT "tgh6407@gmail.com")
+#set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
+#set (CPACK_RESOURCE_FILE_README ${CMAKE_SOURCE_DIR}/README.md)
+set (CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set (CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${ARCHITECTURE})
+set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+set (CPACK_SOURCE_IGNORE_FILES "build/;/build/;//.git;.git;deps/;")
+
+find_library(CURL curl)
+find_library(ZIP zip libzip)
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/json")
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/indicators")
+
+## Configures targets ##
+file (GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")
+file (GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.hpp" "${CMAKE_SOURCE_DIR}/include/*.inl")
+
+
+add_executable (ModDown ${SOURCES} ${HEADERS})
+target_link_libraries(ModDown ${CURL} ${ZIP})
+target_include_directories(ModDown PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/deps/indicators/include)
+target_compile_options(ModDown PUBLIC "-std=c++17" "-g" )
+include(GNUInstallDirs)
+## Adds installation instructions ##
+install (TARGETS ModDown RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT applications)
+include(CPack)
