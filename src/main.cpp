@@ -16,14 +16,6 @@
 #include <nlohmann/json.hpp>
 
 #include "Download.h"
-#include "Progress.h"
-#include "SafeData.hpp"
-
-int changeRange(int OldValue, int OldMax, int OldMin, int NewMax, int NewMin) {
-	return ((((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin);
-}
-
-
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -110,11 +102,6 @@ int main(int argc, char** argv) {
 		int size = modList["files"].size();
 		std::filesystem::create_directory(outputDir);
 		std::filesystem::current_path(outputDir);
-		SafeData<std::pair<int, int>> totalProg;
-		totalProg.set(std::make_pair<int, int>(0, int(size)));
-		std::printf("%d\n", totalProg.get().second);
-		Progress prog(dl, totalProg);
-		prog.start();
 		for (int times = 0; times < size; times++) {
 			std::string fName(modList["files"][times]["downloadUrl"].dump());
 			fName.erase(fName.cbegin());
@@ -124,9 +111,6 @@ int main(int argc, char** argv) {
 			int pos = fName.find_last_of("/");
 			fName.erase(0, pos + 1);
 			dl(url, fName);
-			totalProg.processLocked([times](std::pair<int, int> pair) {
-				pair.first = times;
-			});
 		}
 
 	}
