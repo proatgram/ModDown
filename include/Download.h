@@ -16,9 +16,10 @@
 struct Download {
 public:
 	int operator()(std::string url, std::string output);
-
+	std::pair<long, long> progress;
 private:
-
+protected:
+	int progress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
 };
 
 

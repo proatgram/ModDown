@@ -16,6 +16,8 @@
 #include <nlohmann/json.hpp>
 
 #include "Download.h"
+#include "SafeData.hpp"
+#include "Progress.h"
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -98,21 +100,30 @@ int main(int argc, char** argv) {
 		exit(0);
 	}
 	if ((args & 0b1000) == 0b1000) {
-		Download dl;
+		SafeData<Download> down;
 		int size = modList["files"].size();
 		std::filesystem::create_directory(outputDir);
 		std::filesystem::current_path(outputDir);
+		SafeData<std::pair<int, int>> totalProg;
+		totalProg.set(std::pair<int, int>(0, int(size)));
+		Progress prog(down, totalProg);
+		prog.start();
 		for (int times = 0; times < size; times++) {
-			std::string fName(modList["files"][times]["downloadUrl"].dump());
-			fName.erase(fName.cbegin());
-			fName.erase(fName.cend() - 1);
-			std::string url(fName);
-			std::printf("%s\n", url.c_str());
-			int pos = fName.find_last_of("/");
-			fName.erase(0, pos + 1);
-			dl(url, fName);
+			down.processLocked([times, &totalProg, &modList](Download& dl){
+				std::string fName(modList["files"][times]["downloadUrl"].dump());
+				fName.erase(fName.cbegin());
+				fName.erase(fName.cend() - 1);
+				std::string url(fName);
+				int pos = fName.find_last_of("/");
+				fName.erase(0, pos + 1);
+				dl(url, fName);
+				totalProg.processLocked([times](std::pair<int, int> pair) {
+					pair.first = times;
+				});
+			});
 		}
 
 	}
+
 }
 
