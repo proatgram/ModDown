@@ -12,6 +12,7 @@ ___
 - [libzip](https://github.com/nih-at/libzip) (Avaliable in apt repositories or on Github.)
 - [json](https://github.com/nlohmann/json) (Avaliable on Github)
 - [indicators](https://github.com/p-ranav/indicators) (Avaliable on Github)
+
 ### Building & installing
 ```
 mkdir build && cd build

@@ -9,13 +9,15 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <zip.h>
 #include <sysexits.h>
 #include <filesystem>
 
 #include <nlohmann/json.hpp>
 
-#include "Download.h"
+#include "Request.h"
+#include "MinecraftDownload.h"
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -24,7 +26,7 @@ int main(int argc, char** argv) {
 	}
 
 	nlohmann::json modList;
-	std::string outputDir;
+	std::string outputDir = "Download";
 	unsigned long int args = 0;
 	for (int times = 1; times < argc; times++) {
 		if (std::string(argv[times]).find("--help") != std::string::npos || std::string(argv[times]).find("-h") != std::string::npos) {
@@ -36,8 +38,10 @@ int main(int argc, char** argv) {
 			std::printf("		-j, --json				Indicates that you are using a manifest file.\n");
 			std::printf("		-d, --download			Downloads all the mods in the ModPack.\n");
 			std::printf("		-o, --output			Sets the output folder to store all the downloads.\n");
+			std::printf("		-i, --packinfo			Displays the information about the ModPack\n");
 
 			std::printf("\n");
+			exit(0);
 		}
 
 		if (std::string(argv[times]).find("--zip") != std::string::npos || std::string(argv[times]).find("-z") != std::string::npos) {
@@ -54,6 +58,9 @@ int main(int argc, char** argv) {
 		}
 		if (std::string(argv[times]).find("--output") != std::string::npos || std::string(argv[times]).find("-o") != std::string::npos) {
 			outputDir = argv[times + 1];
+		}
+		if (std::string(argv[times]).find("--packinfo") != std::string::npos || std::string(argv[times]).find("-i") != std::string::npos) {
+			args |= 0b10000;
 		}
 	}
 
@@ -93,26 +100,31 @@ int main(int argc, char** argv) {
 		}
 		jfile >> modList;
 	}
+
 	if ((args & 0b100) == 0b100) {
 		std::printf("%s\n", modList.dump(4).c_str());
 		exit(0);
 	}
-	if ((args & 0b1000) == 0b1000) {
-		Download dl;
-		int size = modList["files"].size();
-		std::filesystem::create_directory(outputDir);
-		std::filesystem::current_path(outputDir);
-		for (int times = 0; times < size; times++) {
-			std::string fName(modList["files"][times]["downloadUrl"].dump());
-			fName.erase(fName.cbegin());
-			fName.erase(fName.cend() - 1);
-			std::string url(fName);
-			std::printf("%s\n", url.c_str());
-			int pos = fName.find_last_of("/");
-			fName.erase(0, pos + 1);
-			dl(url, fName);
-		}
 
+	if (modList["manifestType"].dump() != "\"minecraftModpack\"") {
+		std::fprintf(stderr, "Error: ModPack type not supported.\n");
+		exit(1);
+	}
+
+	if ((args & 0b10000) == 0b10000) {
+		if (modList["manifestType"].dump() == "\"minecraftModpack\"") {
+			std::printf("Name: %s\n", modList["name"].dump().c_str());
+			std::printf("ModPack Version: %s\n", modList["version"].dump().c_str());
+			std::printf("ModPack Author: %s\n", modList["author"].dump().c_str());
+			std::printf("Minecraft Version: %s\n", modList["minecraft"]["version"].dump().c_str());
+		}
+	}
+
+	if ((args & 0b1000) == 0b1000) {
+		if (modList["manifestType"].dump() == "\"minecraftModpack\"") {
+			MinecraftDownload md(modList, outputDir);
+			md();
+		}
 	}
 }
 
