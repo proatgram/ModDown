@@ -11,7 +11,7 @@ void MinecraftDownload::operator()() {
 	int size = m_json["files"].size();
 	if (m_json["files"][0]["downloadUrl"].dump().compare("null") == 0) {
 		m_request.setHeader(std::pair<std::string, std::string>("Accept", "application/json"));
-		m_request.setHeader(std::pair<std::string, std::string>("x-api-key", "$2a$10$oEmLmQHTPAE5KgK8DlvqHebQPweHgcIfL5fDsvCfSDOmZhOQuGOre"));
+		m_request.setHeader(std::pair<std::string, std::string>("x-api-key", m_key));
 		std::string requestBASE("https://api.curseforge.com");
 		for (int times = 0; times < size; times++) {
 			std::string requestURL("/v1/mods/{modId}/files/{fileId}");
@@ -52,16 +52,6 @@ void MinecraftDownload::operator()() {
 				m_request.download(baseURL, modFileName);
 				std::printf("Successfully downloaded mod as %s!\n\n", modFileName.c_str());
 			}
-			/*
-			std::string downloadURL = url["data"].dump();
-			downloadURL.erase(downloadURL.cbegin());
-			downloadURL.erase(downloadURL.cend() - 1);
-			std::string fileName(downloadURL);
-			size_t del = fileName.find_last_of("/");
-			fileName.erase(0, del + 1);
-			std::printf("%s: %s\n", downloadURL.c_str(), fileName.c_str());
-			m_request.download(downloadURL, fileName);
-			*/
 		}
 	}
 	else {

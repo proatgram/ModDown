@@ -17,9 +17,10 @@
 
 class MinecraftDownload {
 	public:
-		MinecraftDownload(nlohmann::json& json, std::string outputLocation) :
+		MinecraftDownload(nlohmann::json& json, std::string outputLocation, std::string key) :
 			m_json(json),
-			m_outputLocation(outputLocation)
+			m_outputLocation(outputLocation),
+			m_key(key)
 		{
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
@@ -28,6 +29,7 @@ class MinecraftDownload {
 	private:
 	nlohmann::json& m_json;
 	std::string m_outputLocation;
+	std::string m_key;
 	Request m_request;
 };
 
