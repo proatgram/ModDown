@@ -24,7 +24,7 @@ class MinecraftDownload {
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
 		}
-		int operator()();
+		void operator()();
 	private:
 	nlohmann::json& m_json;
 	std::string m_outputLocation;
