@@ -12,6 +12,7 @@
 #include <utility>
 #include <sstream>
 #include <filesystem>
+#include <zip.h>
 
 #include "Request.h"
 
@@ -24,6 +25,8 @@ class MinecraftDownload {
 		{
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
+			std::filesystem::create_directory("mods");
+			std::filesystem::create_directory("resourcepacks");
 		}
 		void operator()();
 	private:
