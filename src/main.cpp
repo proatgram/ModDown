@@ -36,8 +36,6 @@ int main(int argc, char** argv) {
 
 			std::printf("	Options:\n");
 			std::printf("		-h, --help			Displays this page.\n");
-			std::printf("		-z, --zip			Indicates that you are using a zip file.\n");
-			std::printf("		-j, --json			Indicates that you are using a manifest file.\n");
 			std::printf("		-d, --download			Downloads all the mods in the ModPack.\n");
 			std::printf("		-o, --output [OUT]		Sets the output folder to store all the downloads.\n");
 			std::printf("		-i, --packinfo			Displays the information about the ModPack.\n");
@@ -46,13 +44,6 @@ int main(int argc, char** argv) {
 
 			std::printf("\n");
 			exit(0);
-		}
-
-		if (std::string(argv[times]).find("--zip") != std::string::npos || std::string(argv[times]).find("-z") != std::string::npos) {
-			args |= 0b1;
-		}
-		else if (std::string(argv[times]).find("--json") != std::string::npos || std::string(argv[times]).find("-j") != std::string::npos) {
-			args |= 0b10;
 		}
 		if (std::string(argv[times]).find("--pipe") != std::string::npos || std::string(argv[times]).find("-p") != std::string::npos) {
 			args |= 0b100;
@@ -153,42 +144,22 @@ int main(int argc, char** argv) {
 			file.close();
 		}
 	}
-	if ((args & 0b11) == 0) {
-		std::fprintf(stderr, "Error: Can't determine file type.\n");
-		exit(EX_USAGE);
-	}
 
-	if ((args & 0b1) == 0b1) {
-		zip_stat_t stat;
-		int* errorp;
-		zip_t* zfile = zip_open(argv[argc - 1], ZIP_RDONLY, errorp);
-		zip_int64_t location = zip_name_locate(zfile, "manifest.json", ZIP_FL_ENC_GUESS);
-		zip_file_t* man = zip_fopen_index(zfile, location, ZIP_FL_UNCHANGED);
-		zip_stat_index(zfile, location, ZIP_FL_ENC_GUESS, &stat);
-		char buffer[stat.size];
-		int sum = 0;
-		int len = zip_fread(man, buffer, stat.size);
-		if (len < 0) {
-			std::fprintf(stderr, "Error.\n");
-		}
-		std::stringstream manFile(buffer);
-		manFile >> modList;
+	zip_stat_t stat;
+	int* errorp;
+	zip_t* zfile = zip_open(argv[argc - 1], ZIP_RDONLY, errorp);
+	zip_int64_t location = zip_name_locate(zfile, "manifest.json", ZIP_FL_ENC_GUESS);
+	zip_file_t* man = zip_fopen_index(zfile, location, ZIP_FL_UNCHANGED);
+	zip_stat_index(zfile, location, ZIP_FL_ENC_GUESS, &stat);
+	char buffer[stat.size];
+	int sum = 0;
+	int len = zip_fread(man, buffer, stat.size);
+	if (len < 0) {
+		std::fprintf(stderr, "Error.\n");
+	}
+	std::stringstream manFile(buffer);
+	manFile >> modList;
 
-	}
-	if ((args & 0b10) == 0b10) {
-		std::fstream jfile(argv[argc - 1]);
-		if (jfile.fail()) {
-			if (!jfile) {
-				std::fprintf(stderr, "Error: Irrecoverable stream error.\n");
-				exit(EX_DATAERR);
-			}
-			if (jfile.eof()) {
-				std::fprintf(stderr, "Error: Reached end of file.\n");
-				exit(EX_IOERR);
-			}
-		}
-		jfile >> modList;
-	}
 
 	if ((args & 0b100) == 0b100) {
 		std::printf("%s\n", modList.dump(4).c_str());

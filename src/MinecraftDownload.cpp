@@ -132,7 +132,10 @@ void MinecraftDownload::operator()() {
 				requestIdURL.replace(idIndex, 7, modId);
 				m_request.setBase(requestBASE);
 
-				std::stringstream url(m_request.sendGET(requestIdURL));
+				std::stringstream url("");
+				while (url.str().compare("") == 0) {
+					url = m_request.sendGET(requestIdURL);
+				}
 				nlohmann::json jsonUrl;
 				// This is to try to prevent the program from exiting in the case that
 				// There was a problem sending the request
@@ -140,8 +143,9 @@ void MinecraftDownload::operator()() {
 					url >> jsonUrl;
 				}
 				catch(nlohmann::detail::parse_error& error) {
-					url = m_request.sendGET(requestIdURL);
-					url >> jsonUrl;
+					std::fprintf(stderr, "Network error. Re-run the program to continue.\n");
+					std::printf("%s\n", url.str().c_str());
+					exit(EX_UNAVAILABLE);
 				}
 				int classId = jsonUrl["data"]["classId"];
 				std::printf("%s: %s\n", downloadURL.c_str(), fileName.c_str());
