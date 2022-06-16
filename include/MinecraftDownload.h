@@ -15,13 +15,15 @@
 #include <zip.h>
 
 #include "Request.h"
+#include "Unpack.h"
 
 class MinecraftDownload {
 	public:
-		MinecraftDownload(nlohmann::json& json, std::string outputLocation, std::string key) :
+		MinecraftDownload(nlohmann::json& json, std::string outputLocation, std::string key, std::string zip) :
 			m_json(json),
 			m_outputLocation(outputLocation),
-			m_key(key)
+			m_key(key),
+			m_zip(zip)
 		{
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
@@ -33,7 +35,9 @@ class MinecraftDownload {
 	nlohmann::json& m_json;
 	std::string m_outputLocation;
 	std::string m_key;
+	std::string m_zip;
 	Request m_request;
+	Unpack m_unpack;
 };
 
 

@@ -18,6 +18,7 @@
 
 #include "Request.h"
 #include "MinecraftDownload.h"
+#include "Unpack.h"
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -210,7 +211,6 @@ int main(int argc, char** argv) {
 	}
 	if ((args & 0b1000) == 0b1000) {
 		// Downloads stuff
-
 		if (APIKEY.compare("NULL") == 0) {
 			std::fstream file;
 			if (geteuid() == 0) {
@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
 		}
 		if (modList["manifestType"].dump() == "\"minecraftModpack\"") {
 			//Minecraft
-			MinecraftDownload md(modList, outputDir, APIKEY);
+			MinecraftDownload md(modList, outputDir, APIKEY, argv[argc - 1]);
 			md();
 		}
 	}
