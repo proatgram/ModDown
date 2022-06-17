@@ -132,10 +132,8 @@ void MinecraftDownload::operator()() {
 				requestIdURL.replace(idIndex, 7, modId);
 				m_request.setBase(requestBASE);
 
-				std::stringstream url("");
-				while (url.str().compare("") == 0) {
-					url = m_request.sendGET(requestIdURL);
-				}
+				std::stringstream url(m_request.sendGET(requestIdURL));
+
 				nlohmann::json jsonUrl;
 				// This is to try to prevent the program from exiting in the case that
 				// There was a problem sending the request
@@ -177,4 +175,8 @@ void MinecraftDownload::operator()() {
 	overides.erase(overides.cend() - 1);
 	std::filesystem::copy(path + overides, m_outputLocation, std::filesystem::copy_options::recursive | std::filesystem::copy_options::skip_existing);
 	std::filesystem::remove_all(path);
+	std::printf("Downloaded all the mods in the ModPack.\n");
+	std::printf("Install Minecraft Forge or Fabric depending on what your modpack requires.\n");
+	std::printf("Then, copy the output folder somewhere convienent for you.\n");
+	std::printf("Once your mod loader is installed, change the game directory for that your mod loader to your folder.\n");
 }

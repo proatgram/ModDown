@@ -73,7 +73,6 @@ std::string Unpack::operator()(std::string filename) {
 					std::printf("Error reading from file.\n");
 					exit(EX_IOERR);
 				}
-				std::printf("%s\n", buffer);
 				stream.write(buffer, stat.size);
 				stream.close();
 				zip_fclose(zipFile);

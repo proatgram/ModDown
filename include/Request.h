@@ -15,6 +15,7 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <utility>
+#include <unistd.h>
 #include <cstdio>
 
 

@@ -93,12 +93,15 @@ std::stringstream Request::sendGET(std::string endpoint) {
 	curl_easy_setopt(handle, CURLOPT_HTTPHEADER, m_header);
 	curl_easy_setopt(handle, CURLOPT_HEADEROPT, CURLHEADER_UNIFIED);
 	curl_easy_setopt(handle, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+	curl_easy_setopt(handle, CURLOPT_TIMEOUT, 60L);
+	curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 60L);
 	res = curl_easy_perform(handle);
+	sleep(1);
 	if (res != CURLE_OK) {
 		std::fprintf(stderr, "Error: Please see error code for more details. ");
 		std::fprintf(stderr, "Errno: %d\n", res);
 		std::printf("Error: %s\n", curl_easy_strerror(res));
-		return std::stringstream("LIBCURLERR");
+		return std::stringstream("LIBCURLERR ");
 	}
 	handle = nullptr;
 	free(handle);
