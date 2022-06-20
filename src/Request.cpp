@@ -12,7 +12,11 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	*stream << ptr;
 	return nmemb * size;
 }
-
+static int progress_callback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+	Request* rq = (Request*)clientp;
+	rq->m_downloadProgress = Utils<size_t>::changeRange(dlnow, dltotal, 1, 100, 1);
+	return CURL_PROGRESSFUNC_CONTINUE;
+}
 int Request::download(std::string url, std::string output) {
 	CURL *handle = curl_easy_init();
 	std::string dUrl = url;
@@ -21,6 +25,10 @@ int Request::download(std::string url, std::string output) {
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
+	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, &progress_callback);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
 	res = curl_easy_perform(handle);
 	if (res != CURLE_OK) {
 		std::printf("Error. Please see error code for more details. ");
@@ -41,6 +49,10 @@ int Request::download(std::string output) {
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
+	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
 	res = curl_easy_perform(handle);
 	if (res != CURLE_OK) {
 		std::printf("Error. Please see error code for more details. ");
@@ -61,6 +73,10 @@ int Request::download() {
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
+	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
 	res = curl_easy_perform(handle);
 	curl_easy_cleanup(handle);
 	std::fclose(fp);

@@ -17,15 +17,24 @@
 #include <zip.h>
 #include <sysexits.h>
 #include <fstream>
+#include <indicators/progress_bar.hpp>
 
+#include "SafeData.hpp"
+#include "Utils.hpp"
+#include "Progress.h"
 
 struct Unpack {
 	public:
 
+	Unpack() :
+		m_progress(0)
+	{
+
+	}
+
 	std::string operator()(std::string filename);
 
-	private:
-
+	SafeData<size_t> m_progress;
 };
 
 

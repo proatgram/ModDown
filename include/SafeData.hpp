@@ -18,21 +18,43 @@
  *
  * @tparam T
  */
-template<typename T>
+template <typename T>
 class SafeData {
     public:
-		SafeData(SafeData<T>& data) {
-			m_data = data.get();
-		}
 		SafeData(T data) {
 			m_data = data;
 		}
+
 		SafeData() {
 
 		}
 		~SafeData() {
 
 		}
+
+		T operator=(const T& data) {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_data = data;
+            return m_data;
+		}
+
+		T operator+(const T& data) {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_data += data;
+            return m_data;
+		}
+
+		T operator()() {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            return m_data;
+		}
+
+		T operator()(T data) {
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_data = data;
+			return m_data;
+		}
+
         /**
          * @brief Sets the data to be read by another thread
          *
@@ -51,6 +73,12 @@ class SafeData {
             std::lock_guard<std::mutex> lock(m_mutex);
             return m_data;
         }
+
+        const T& get() const {
+			std::lock_guard<std::mutex> lock(m_mutex);
+			return m_data;
+		}
+
         /**
          * @brief A function used to get and modify `T`
          *

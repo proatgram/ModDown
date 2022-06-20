@@ -44,7 +44,26 @@ std::string Unpack::operator()(std::string filename) {
 		std::filesystem::create_directory("/tmp/ModDown/extracts/" + path.filename().string());
 	}
 	std::string dir("/tmp/ModDown/extracts/" + path.filename().string());
-	for (int times = 0; times < zip_get_num_entries(file, ZIP_FL_UNCHANGED); times++) {
+	long int numEntries = zip_get_num_entries(file, ZIP_FL_UNCHANGED);
+	unsigned long int uNumEntries = numEntries;
+	std::shared_ptr<indicators::ProgressBar> pb = std::make_shared<indicators::ProgressBar>(
+		indicators::option::BarWidth{50},
+		indicators::option::Start{"["},
+		indicators::option::Fill{"="},
+		indicators::option::Lead{">"},
+		indicators::option::Remainder{" "},
+		indicators::option::End{"]"},
+		indicators::option::PostfixText{"Extracting Archive"},
+		indicators::option::ForegroundColor{indicators::Color::green},
+		indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}}
+	);
+
+	Progress progBar(m_progress, pb);
+	for (unsigned int times = 0; times < numEntries; times++) {
+		unsigned long int prog = times;
+		m_progress = Utils<size_t>::changeRange(prog, uNumEntries, 0, 100, 0);
+		progBar.setProgress(m_progress());
+
 		if (zip_stat_index(file, times, ZIP_FL_ENC_GUESS, &stat) == 0) {
 			int len = strlen(stat.name);
 			if (stat.name[len - 1] == '/') {
@@ -63,7 +82,6 @@ std::string Unpack::operator()(std::string filename) {
 					stream.open(dir + '/' + stat.name, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
 				}
 				char buffer[stat.size];
-				std::printf("%ld", stat.size);
 				len = zip_fread(zipFile, buffer, stat.size);
 				if (len < 0) {
 					std::printf("Error: Can't read from file.\n");
@@ -79,5 +97,6 @@ std::string Unpack::operator()(std::string filename) {
 			}
 		}
 	}
+	progBar.finish();
 	return dir + '/';
 }

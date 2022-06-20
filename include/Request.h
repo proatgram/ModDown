@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <cstdio>
 
+#include <Utils.hpp>
+#include <SafeData.hpp>
 
 struct Request {
 public:
@@ -47,12 +49,13 @@ public:
 
 	void clearHeader();
 
+	SafeData<size_t> m_downloadProgress;
+
 private:
 
 	std::string m_baseURL;
 
 	struct curl_slist* m_header;
-
 };
 
 

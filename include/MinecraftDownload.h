@@ -16,6 +16,8 @@
 
 #include "Request.h"
 #include "Unpack.h"
+#include "SafeData.hpp"
+#include "Utils.hpp"
 
 class MinecraftDownload {
 	public:
