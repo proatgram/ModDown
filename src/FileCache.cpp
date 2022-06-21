@@ -1,0 +1,75 @@
+/*
+ * FileCache.cpp
+ *
+ *  Created on: Jun 20, 2022
+ *      Author: thetimbrick
+ */
+
+#include "FileCache.h"
+
+const std::string Cache::STR_ENDOFFILE = "STR_ENDOFFILE";
+const std::string Cache::STR_FILENOTOPEN = "STR_FILENOTOPEN";
+
+int Cache::openFile(std::string filePath) {
+	m_path = std::filesystem::path(filePath);
+	m_file.open(m_path.filename().string(), std::fstream::in | std::fstream::out | std::fstream::app);
+	if (!m_file) {
+		return Cache::SUCCESS;
+	}
+	else {
+		m_file.open(m_path.filename().string(), std::fstream::out | std::fstream::app);
+		m_file.close();
+		m_file.open(m_path.filename().string(), std::fstream::in | std::fstream::out | std::fstream::app);
+		return Cache::SUCCESS;
+	}
+	return Cache::ERROR;
+}
+
+int Cache::closeFile() {
+	m_file.close();
+	return 0;
+}
+
+int Cache::writePair(std::string key, std::string value) {
+	if (!m_file) {
+		return Cache::FILENOTOPEN;
+	}
+	std::stringstream str;
+	str << '{' << key << '}' << "==" << '{' << value << '}' << std::endl;
+	m_file << str.str() << std::endl;
+	return Cache::SUCCESS;
+}
+
+std::string Cache::getPair(std::string key) {
+	if (!m_file) {
+		return Cache::STR_FILENOTOPEN;
+	}
+	int initpos = m_file.tellg();
+	m_file.seekg(0);
+	std::string buff;
+	std::string value;
+	std::string findValue('{' + key + '}');
+	bool found(false);
+	while (!found) {
+		std::getline(m_file, buff);
+		if (buff.find(findValue) != std::string::npos) {
+			std::stringstream wr;
+			wr << '{' << key << '}' << "==" << '{';
+			int len = strlen(wr.str().c_str());
+			value = buff.substr(len, buff.size() - len);
+			value.erase(value.cend() - 1);
+			m_file.seekg(initpos);
+			found = true;
+			return value;
+		}
+		else {
+			buff = '\0';
+		}
+		if (m_file.eof()) {
+			m_file.clear();
+			m_file.seekg(0);
+			return Cache::STR_ENDOFFILE;
+		}
+	}
+	return value;
+}

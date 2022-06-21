@@ -16,16 +16,18 @@
 
 #include "Request.h"
 #include "Unpack.h"
+#include "FileCache.h"
 #include "SafeData.hpp"
 #include "Utils.hpp"
 
 class MinecraftDownload {
 	public:
-		MinecraftDownload(nlohmann::json& json, std::string outputLocation, std::string key, std::string zip) :
+		MinecraftDownload(nlohmann::json& json, std::string outputLocation, std::string key, std::filesystem::path zip) :
 			m_json(json),
 			m_outputLocation(outputLocation),
 			m_key(key),
-			m_zip(zip)
+			m_zip(zip),
+			m_cache(m_zip.filename().string() + ".cache")
 		{
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
@@ -37,9 +39,10 @@ class MinecraftDownload {
 	nlohmann::json& m_json;
 	std::string m_outputLocation;
 	std::string m_key;
-	std::string m_zip;
+	std::filesystem::path m_zip;
 	Request m_request;
 	Unpack m_unpack;
+	Cache m_cache;
 };
 
 

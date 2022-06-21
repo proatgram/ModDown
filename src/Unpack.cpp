@@ -8,8 +8,7 @@
 #include "Unpack.h"
 
 
-std::string Unpack::operator()(std::string filename) {
-	std::filesystem::path path(filename);
+std::string Unpack::operator()(std::filesystem::path path) {
 	zip_t* file;
 	zip_file_t* zipFile;
 	zip_stat_t stat;
@@ -20,7 +19,7 @@ std::string Unpack::operator()(std::string filename) {
 
 	std::fstream stream;
 
-	if ((file = zip_open(filename.c_str(), 0, errorno)) == NULL) {
+	if ((file = zip_open(std::filesystem::absolute(path).string().c_str(), 0, errorno)) == NULL) {
 		error->zip_err = *errorno;
 		std::fprintf(stderr, "Error extracting zip file. Error code %d. %s", error->zip_err, zip_error_strerror(error));
 	}

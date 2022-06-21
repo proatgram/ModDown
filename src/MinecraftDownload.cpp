@@ -15,39 +15,41 @@ void MinecraftDownload::operator()() {
 		m_request.setHeader(std::pair<std::string, std::string>("x-api-key", m_key));
 		std::string requestBASE("https://api.curseforge.com");
 		for (int times = 0; times < size; times++) {
-			std::string requestURL("/v1/mods/{modId}/files/{fileId}");
 			std::string modId(m_json["files"][times]["projectID"].dump());
 			std::string fileId(m_json["files"][times]["fileID"].dump());
 
-			size_t index = requestURL.find("{modId}");
-			requestURL.replace(index, 7, modId);
-			index = requestURL.find("{fileId}");
-			requestURL.replace(index, 8, fileId);
-
-			std::string requestIdURL("/v1/mods/{modId}");
-			size_t idIndex = requestIdURL.find("{modId}");
-			requestIdURL.replace(idIndex, 7, modId);
-
-			m_request.setBase(requestBASE);
-			std::stringstream mdURL(m_request.sendGET(requestURL));
-			std::stringstream classIdURL(m_request.sendGET(requestIdURL));
-			nlohmann::json idUrl;
-			nlohmann::json url;
-			mdURL >> url;
-			classIdURL >> idUrl;
-			int classId = idUrl["data"]["classId"];
-
-			std::string modFileName(url["data"]["fileName"].dump());
-			modFileName.erase(modFileName.cbegin());
-			modFileName.erase(modFileName.cend() - 1);
 			bool exists = false;
 			for (const auto & entry : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
-				if (entry.path().filename().compare(modFileName) == 0) {
+				if (entry.path().filename().compare(m_cache.getPair(fileId)) == 0) {
 					exists = true;
-					std::printf("File %s exists.\n", modFileName.c_str());
+					std::printf("File %s exists.\n", m_cache.getPair(fileId).c_str());
 				}
 			}
+
 			if (!exists) {
+				std::string requestURL("/v1/mods/{modId}/files/{fileId}");
+
+				size_t index = requestURL.find("{modId}");
+				requestURL.replace(index, 7, modId);
+				index = requestURL.find("{fileId}");
+				requestURL.replace(index, 8, fileId);
+
+				std::string requestIdURL("/v1/mods/{modId}");
+				size_t idIndex = requestIdURL.find("{modId}");
+				requestIdURL.replace(idIndex, 7, modId);
+
+				m_request.setBase(requestBASE);
+				std::stringstream mdURL(m_request.sendGET(requestURL));
+				std::stringstream classIdURL(m_request.sendGET(requestIdURL));
+				nlohmann::json idUrl;
+				nlohmann::json url;
+				mdURL >> url;
+				classIdURL >> idUrl;
+				int classId = idUrl["data"]["classId"];
+				std::string modFileName(url["data"]["fileName"].dump());
+				modFileName.erase(modFileName.cbegin());
+				modFileName.erase(modFileName.cend() - 1);
+				m_cache.writePair(fileId, modFileName);
 				std::printf("Mod Display Name: %s\n", url["data"]["displayName"].dump().c_str());
 				std::printf("Mod Filename: %s\n\n", modFileName.c_str());
 
@@ -112,14 +114,16 @@ void MinecraftDownload::operator()() {
 			std::string downloadURL(m_json["files"][times]["downloadUrl"].dump());
 			downloadURL.erase(downloadURL.cbegin());
 			downloadURL.erase(downloadURL.cend() - 1);
+
 			std::string fileName(downloadURL);
 			size_t del = fileName.find_last_of("/");
 			fileName.erase(0, del + 1);
+
 			bool exists = false;
 			for (const auto & entry : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
-				if (entry.path().filename().compare(fileName) == 0) {
+				if (entry.path().filename().compare(m_cache.getPair(m_json["files"][times]["fileID"].dump())) == 0) {
 					exists = true;
-					std::printf("File %s exists.\n", fileName.c_str());
+					std::printf("File %s exists.\n", m_cache.getPair(m_json["files"][times]["fileID"].dump()).c_str());
 				}
 			}
 			if (!exists) {

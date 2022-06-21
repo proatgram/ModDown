@@ -11,22 +11,34 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
+#include <cstring>
 
 class Cache {
 	public:
-
-		Cache(std::string filePath) :
-			m_path(filePath)
+		Cache(std::string path)
 		{
-			std::fstream m_file(m_path.filename().string(), std::fstream::out | std::fstream::app);
-			m_file.close();
-			m_file.open(m_path.filename().string(), std::fstream::in | std::fstream::out | std::fstream::app);
+			this->openFile(path);
 		}
 
 		int writePair(std::string key, std::string value);
 
 		std::string getPair(std::string key);
 
+		int openFile(std::string filePath);
+
+		int closeFile();
+
+
+		enum {
+			FILENOTOPEN,
+			SUCCESS,
+			ERROR,
+			ENDOFFILE
+		};
+
+		static const std::string STR_FILENOTOPEN;
+		static const std::string STR_ENDOFFILE;
 	private:
 
 		std::filesystem::path m_path;

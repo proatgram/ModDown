@@ -32,7 +32,7 @@ struct Unpack {
 
 	}
 
-	std::string operator()(std::string filename);
+	std::string operator()(std::filesystem::path path);
 
 	SafeData<size_t> m_progress;
 };
