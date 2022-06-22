@@ -50,7 +50,7 @@ find_library(PTHREAD pthread libpthread)
 
 
 pkg_search_module(nlohmann_json REQUIRED nlohmann_json>=3.10.5)
-#pkg_search_module(indicators REQUIRED indicators>=2.2.0)
+pkg_search_module(indicators REQUIRED indicators>=2.2.0)
 
 ## Configures targets ##
 file (GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")

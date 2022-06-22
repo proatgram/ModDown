@@ -13,11 +13,16 @@ static size_t write_cb(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	return nmemb * size;
 }
 static int progress_callback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-	Request* rq = (Request*)clientp;
-	rq->m_downloadProgress = Utils<size_t>::changeRange(dlnow, dltotal, 1, 100, 1);
+	indicators::ProgressBar* prg = (indicators::ProgressBar*)clientp;
+	if (dlnow > 0 && prg->is_completed() != true) {
+		prg->set_progress(Utils<size_t>::changeRange(dlnow, dltotal, 0, 100, 0));
+	}
 	return CURL_PROGRESSFUNC_CONTINUE;
 }
 int Request::download(std::string url, std::string output) {
+	m_progress.set_option(indicators::option::PostfixText{output});
+	m_progress.set_option(indicators::option::Completed{false});
+	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = url;
 	CURLcode res;
@@ -26,14 +31,16 @@ int Request::download(std::string url, std::string output) {
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, &progress_callback);
-	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, &m_progress);
 	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
+	m_progress.set_option(indicators::option::PostfixText{output});
 	res = curl_easy_perform(handle);
 	if (res != CURLE_OK) {
 		std::printf("Error. Please see error code for more details. ");
 		std::printf("Errno: %d: \n", res);
 		std::printf("Error: %s\n", curl_easy_strerror(res));
+		m_progress.mark_as_completed();
 		return EXIT_FAILURE;
 	}
 	curl_easy_cleanup(handle);
@@ -42,6 +49,9 @@ int Request::download(std::string url, std::string output) {
 }
 
 int Request::download(std::string output) {
+	m_progress.set_option(indicators::option::PostfixText{output});
+	m_progress.set_option(indicators::option::Completed{false});
+	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = m_baseURL;
 	CURLcode res;
@@ -50,7 +60,7 @@ int Request::download(std::string output) {
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
-	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, &m_progress);
 	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
 	res = curl_easy_perform(handle);
@@ -58,6 +68,7 @@ int Request::download(std::string output) {
 		std::printf("Error. Please see error code for more details. ");
 		std::printf("Errno: %d\n", res);
 		std::printf("Error: %s\n", curl_easy_strerror(res));
+		m_progress.mark_as_completed();
 		return EXIT_FAILURE;
 	}
 	curl_easy_cleanup(handle);
@@ -66,6 +77,9 @@ int Request::download(std::string output) {
 }
 
 int Request::download() {
+	m_progress.set_option(indicators::option::PostfixText{m_baseURL});
+	m_progress.set_option(indicators::option::Completed{false});
+	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = m_baseURL;
 	CURLcode res;
@@ -74,7 +88,7 @@ int Request::download() {
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
 	curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
-	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, this);
+	curl_easy_setopt(handle, CURLOPT_XFERINFODATA, &m_progress);
 	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(handle, CURLOPT_STDERR, std::fopen("/dev/null", "ro"));
 	res = curl_easy_perform(handle);
@@ -88,6 +102,7 @@ int Request::download() {
 		std::printf("Error. Please see error code for more details. ");
 		std::printf("Errno: %d\n", res);
 		std::printf("Error: %s\n", curl_easy_strerror(res));
+		m_progress.mark_as_completed();
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;

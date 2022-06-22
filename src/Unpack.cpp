@@ -45,23 +45,10 @@ std::string Unpack::operator()(std::filesystem::path path) {
 	std::string dir("/tmp/ModDown/extracts/" + path.filename().string());
 	long int numEntries = zip_get_num_entries(file, ZIP_FL_UNCHANGED);
 	unsigned long int uNumEntries = numEntries;
-	std::shared_ptr<indicators::ProgressBar> pb = std::make_shared<indicators::ProgressBar>(
-		indicators::option::BarWidth{50},
-		indicators::option::Start{"["},
-		indicators::option::Fill{"="},
-		indicators::option::Lead{">"},
-		indicators::option::Remainder{" "},
-		indicators::option::End{"]"},
-		indicators::option::PostfixText{"Extracting Archive"},
-		indicators::option::ForegroundColor{indicators::Color::green},
-		indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}}
-	);
-
-	Progress progBar(m_progress, pb);
 	for (unsigned int times = 0; times < numEntries; times++) {
 		unsigned long int prog = times;
 		m_progress = Utils<size_t>::changeRange(prog, uNumEntries, 0, 100, 0);
-		progBar.setProgress(m_progress());
+		m_bar.set_progress(m_progress());
 
 		if (zip_stat_index(file, times, ZIP_FL_ENC_GUESS, &stat) == 0) {
 			int len = strlen(stat.name);
@@ -96,6 +83,6 @@ std::string Unpack::operator()(std::filesystem::path path) {
 			}
 		}
 	}
-	progBar.finish();
+	m_bar.set_progress(100);
 	return dir + '/';
 }

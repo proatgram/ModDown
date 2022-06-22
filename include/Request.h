@@ -10,13 +10,14 @@
 
 #include <string>
 #include <cstdlib>
-#include <initializer_list>
 #include <sstream>
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <utility>
 #include <unistd.h>
 #include <cstdio>
+#include <indicators/progress_bar.hpp>
+#include <indicators/cursor_control.hpp>
 
 #include <Utils.hpp>
 #include <SafeData.hpp>
@@ -26,9 +27,20 @@ public:
 
 	Request() :
 		m_baseURL("\0"),
-		m_header(nullptr)
-	{
+		m_header(nullptr),
+		m_progress()
 
+	{
+		indicators::show_console_cursor(false);
+		m_progress.set_option(indicators::option::BarWidth{50});
+		m_progress.set_option(indicators::option::Start{"["});
+		m_progress.set_option(indicators::option::Fill{"-"});
+		m_progress.set_option(indicators::option::Lead{">"});
+		m_progress.set_option(indicators::option::Remainder{" "});
+		m_progress.set_option(indicators::option::End{"]"});
+		m_progress.set_option(indicators::option::ShowPercentage{true});
+		m_progress.set_option(indicators::option::ForegroundColor{indicators::Color::green});
+		m_progress.set_option(indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}});
 	}
 	~Request() {
 		free(m_header);
@@ -49,13 +61,14 @@ public:
 
 	void clearHeader();
 
-	SafeData<size_t> m_downloadProgress;
-
 private:
 
 	std::string m_baseURL;
 
 	struct curl_slist* m_header;
+
+protected:
+	indicators::ProgressBar m_progress;
 };
 
 

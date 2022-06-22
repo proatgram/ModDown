@@ -50,12 +50,8 @@ void MinecraftDownload::operator()() {
 				modFileName.erase(modFileName.cbegin());
 				modFileName.erase(modFileName.cend() - 1);
 				m_cache.writePair(fileId, modFileName);
-				std::printf("Mod Display Name: %s\n", url["data"]["displayName"].dump().c_str());
-				std::printf("Mod Filename: %s\n\n", modFileName.c_str());
-
 				// If the downloadUrl element does not equal 'null'
 				if (url["data"]["downloadUrl"].dump().compare("null") != 0) {
-					std::printf("Mod data contains a download url. Downloading...\n");
 					std::string downloadURL(url["data"]["downloadUrl"].dump());
 					downloadURL.erase(downloadURL.cbegin());
 					downloadURL.erase(downloadURL.cend() - 1);
@@ -78,16 +74,12 @@ void MinecraftDownload::operator()() {
 					std::printf("Successfully downloaded mod as %s!\n\n", modFileName.c_str());
 				}
 				else {
-					std::printf("Mod data does not contain a download url.\n");
-					std::printf("Trying to guess url based on the ID...\n");
 					std::string id(url["data"]["id"].dump());
 					std::string baseURL("https://edge.forgecdn.net/files/");
 					id.insert(4, "/");
 					id.insert(id.size(), "/");
 					baseURL.append(id);
 					baseURL.append(modFileName);
-					std::printf("Guessed download url as: %s\n", baseURL.c_str());
-					std::printf("Trying to download...\n");
 					if (classId == 6) {
 						std::filesystem::current_path("mods");
 						m_request.download(baseURL, modFileName);
@@ -139,8 +131,7 @@ void MinecraftDownload::operator()() {
 				std::stringstream url(m_request.sendGET(requestIdURL));
 
 				nlohmann::json jsonUrl;
-				// This is to try to prevent the program from exiting in the case that
-				// There was a problem sending the request
+				// Attempt to catch an exception caused by a network error.
 				try {
 					url >> jsonUrl;
 				}
@@ -172,7 +163,6 @@ void MinecraftDownload::operator()() {
 	}
 	std::filesystem::path curPath(std::filesystem::current_path());
 	std::filesystem::current_path(curPath.parent_path());
-
 	std::string path(m_unpack(m_zip));
 	std::string overides(m_json["overrides"].dump());
 	overides.erase(overides.cbegin());
@@ -183,4 +173,5 @@ void MinecraftDownload::operator()() {
 	std::printf("Install Minecraft Forge or Fabric depending on what your modpack requires.\n");
 	std::printf("Then, copy the output folder somewhere convienent for you.\n");
 	std::printf("Once your mod loader is installed, change the game directory for that your mod loader to your folder.\n");
+	indicators::show_console_cursor(true);
 }
