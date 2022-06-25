@@ -132,7 +132,7 @@ std::stringstream Request::sendGET(std::string endpoint) {
 		std::fprintf(stderr, "Error: Please see error code for more details. ");
 		std::fprintf(stderr, "Errno: %d\n", res);
 		std::printf("Error: %s\n", curl_easy_strerror(res));
-		return std::stringstream("LIBCURLERR ");
+		return std::stringstream("LIBCURLERR");
 	}
 	handle = nullptr;
 	free(handle);

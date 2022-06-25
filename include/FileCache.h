@@ -21,7 +21,14 @@ class Cache {
 			this->openFile(path);
 		}
 
+		Cache()
+		{
+
+		}
+
 		int writePair(std::string key, std::string value);
+
+		int removePair(std::string key);
 
 		std::string getPair(std::string key);
 

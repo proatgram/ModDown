@@ -40,6 +40,34 @@ int Cache::writePair(std::string key, std::string value) {
 	return Cache::SUCCESS;
 }
 
+int Cache::removePair(std::string key) {
+	if (!m_file) {
+		return Cache::FILENOTOPEN;
+	}
+	int startPos = m_file.tellg();
+	std::stringstream buff;
+	buff << m_file.rdbuf();
+	std::string str(buff.str());
+	std::string findValue('{' + key + '}');
+	int pos = m_file.tellg();
+	size_t at(str.find(findValue));
+	if (at != std::string::npos) {
+		bool endFound = false;
+		size_t pos;
+		while (!endFound) {
+			if (str.at(pos + at) == '\n') {
+				endFound = true;
+			}
+			pos++;
+		}
+		str.erase(str.find(findValue), pos);
+		std::filesystem::resize_file(m_path, 0);
+		m_file.write(str.c_str(), str.size());
+		return Cache::SUCCESS;
+	}
+	return Cache::ENDOFFILE;
+}
+
 std::string Cache::getPair(std::string key) {
 	if (!m_file) {
 		return Cache::STR_FILENOTOPEN;

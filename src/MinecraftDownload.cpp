@@ -10,23 +10,32 @@
 void MinecraftDownload::operator()() {
 	// Downloads the Modpacks and resource packs and puts them in their respective folder.
 	int size = m_json["files"].size();
+	int skip = 0;
+	for (int times_ = 0; times_ < size; times_++) {
+		std::string id(m_json["files"][times_]["fileID"].dump());
+		for (const auto & entry : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
+			if (m_cache.getPair(id) != Cache::STR_ENDOFFILE) {
+				if (entry.path().filename().compare(m_cache.getPair(id)) == 0) {
+					std::printf("File %s exists.\n", m_cache.getPair(id).c_str());
+					skip++;
+				}
+				/*
+				else {
+					std::printf("File %s does not exist, but is cached. Removing cached item.\n", m_cache.getPair(id).c_str());
+					m_cache.removePair(id);
+				}
+				*/
+			}
+		}
+	}
+	int times = skip;
 	if (m_json["files"][0]["downloadUrl"].dump().compare("null") == 0) {
 		m_request.setHeader(std::pair<std::string, std::string>("Accept", "application/json"));
 		m_request.setHeader(std::pair<std::string, std::string>("x-api-key", m_key));
 		std::string requestBASE("https://api.curseforge.com");
-		for (int times = 0; times < size; times++) {
+		for ( ; times < size; times++) {
 			std::string modId(m_json["files"][times]["projectID"].dump());
 			std::string fileId(m_json["files"][times]["fileID"].dump());
-
-			bool exists = false;
-			for (const auto & entry : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
-				if (entry.path().filename().compare(m_cache.getPair(fileId)) == 0) {
-					exists = true;
-					std::printf("File %s exists.\n", m_cache.getPair(fileId).c_str());
-				}
-			}
-
-			if (!exists) {
 				std::string requestURL("/v1/mods/{modId}/files/{fileId}");
 
 				size_t index = requestURL.find("{modId}");
@@ -43,8 +52,14 @@ void MinecraftDownload::operator()() {
 				std::stringstream classIdURL(m_request.sendGET(requestIdURL));
 				nlohmann::json idUrl;
 				nlohmann::json url;
-				mdURL >> url;
-				classIdURL >> idUrl;
+				try {
+					mdURL >> url;
+					classIdURL >> idUrl;
+				}
+				catch (nlohmann::detail::parse_error& err){
+					std::printf("Network error. Re-run program to continue.\n");
+					exit(EX_DATAERR);
+				}
 				int classId = idUrl["data"]["classId"];
 				std::string modFileName(url["data"]["fileName"].dump());
 				modFileName.erase(modFileName.cbegin());
@@ -57,7 +72,9 @@ void MinecraftDownload::operator()() {
 					downloadURL.erase(downloadURL.cend() - 1);
 					if (classId == 6) {
 						std::filesystem::current_path("mods");
-						m_request.download(downloadURL, modFileName);
+						if (m_request.download(downloadURL, modFileName) != 0) {
+							std::filesystem::remove(modFileName);
+						}
 						std::filesystem::path curPath(std::filesystem::current_path());
 						std::filesystem::current_path(curPath.parent_path());
 					}
@@ -98,11 +115,10 @@ void MinecraftDownload::operator()() {
 					}
 					std::printf("Successfully downloaded mod as %s!\n\n", modFileName.c_str());
 				}
-			}
 		}
 	}
 	else {
-		for (int times = 0; times < size; times++) {
+		for ( ; times < size; times++) {
 			std::string downloadURL(m_json["files"][times]["downloadUrl"].dump());
 			downloadURL.erase(downloadURL.cbegin());
 			downloadURL.erase(downloadURL.cend() - 1);
@@ -111,14 +127,6 @@ void MinecraftDownload::operator()() {
 			size_t del = fileName.find_last_of("/");
 			fileName.erase(0, del + 1);
 
-			bool exists = false;
-			for (const auto & entry : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
-				if (entry.path().filename().compare(m_cache.getPair(m_json["files"][times]["fileID"].dump())) == 0) {
-					exists = true;
-					std::printf("File %s exists.\n", m_cache.getPair(m_json["files"][times]["fileID"].dump()).c_str());
-				}
-			}
-			if (!exists) {
 				m_request.setHeader(std::pair<std::string, std::string>("Accept", "application/json"));
 				m_request.setHeader(std::pair<std::string, std::string>("x-api-key", m_key));
 				std::string requestBASE("https://api.curseforge.com");
@@ -158,7 +166,6 @@ void MinecraftDownload::operator()() {
 					std::printf("Unknown pack type. Putting download in top directory.\n");
 					m_request.download(downloadURL, fileName);
 				}
-			}
 		}
 	}
 	std::filesystem::path curPath(std::filesystem::current_path());

@@ -27,10 +27,11 @@ class MinecraftDownload {
 			m_outputLocation(outputLocation),
 			m_key(key),
 			m_zip(zip),
-			m_cache(m_zip.filename().string() + ".cache")
+			m_cache()
 		{
 			std::filesystem::create_directory(m_outputLocation);
 			std::filesystem::current_path(m_outputLocation);
+			m_cache.openFile(m_zip.filename().string() + ".cache");
 			std::filesystem::create_directory("mods");
 			std::filesystem::create_directory("resourcepacks");
 		}
