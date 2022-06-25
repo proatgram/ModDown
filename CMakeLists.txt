@@ -18,7 +18,7 @@ else()
 endif()
 message(STATUS "Detected architecture: ${ARCHITECTURE}")
 
-project (ModDown VERSION "1.2")
+project (ModDown VERSION "2.0")
 set (CMAKE_BUILD_TYPE Debug)
 
 set (CMAKE_CXX_STANDARD 17)
