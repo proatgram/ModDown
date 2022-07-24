@@ -25,6 +25,8 @@ int Request::download(std::string url, std::string output) {
 	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = url;
+    char* encodedUri = g_uri_escape_string(dUrl.c_str(), "!*'();:@&=+$,/?#[]", true);
+    dUrl = encodedUri;
 	CURLcode res;
 	FILE* fp = std::fopen(output.c_str(), "wb");
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -54,7 +56,9 @@ int Request::download(std::string output) {
 	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = m_baseURL;
-	CURLcode res;
+	char* encodedUri = g_uri_escape_string(dUrl.c_str(), "!*'();:@&=+$,/?#[]", true);
+    dUrl = encodedUri;
+    CURLcode res;
 	FILE* fp = std::fopen(output.c_str(), "wb");
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());
@@ -82,7 +86,9 @@ int Request::download() {
 	m_progress.set_progress(0);
 	CURL *handle = curl_easy_init();
 	std::string dUrl = m_baseURL;
-	CURLcode res;
+    char* encodedUri = g_uri_escape_string(dUrl.c_str(), "!*'();:@&=+$,/?#[]", true);
+    dUrl = encodedUri;
+    CURLcode res;
 	FILE* fp = std::fopen("Downloads", "wb");
 	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(handle, CURLOPT_URL, dUrl.c_str());

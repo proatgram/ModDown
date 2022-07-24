@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
+#include <glib-2.0/glib.h>
 
 #include <Utils.hpp>
 #include <SafeData.hpp>

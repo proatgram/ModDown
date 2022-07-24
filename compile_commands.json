@@ -1,0 +1,27 @@
+[
+{
+  "directory": "/home/thetimbrick/eclipse-workspace/ModDown/build",
+  "command": "/usr/bin/c++  -I/home/thetimbrick/eclipse-workspace/ModDown/include -g -std=c++17 -g -std=gnu++17 -o CMakeFiles/ModDown.dir/src/FileCache.cpp.o -c /home/thetimbrick/eclipse-workspace/ModDown/src/FileCache.cpp",
+  "file": "/home/thetimbrick/eclipse-workspace/ModDown/src/FileCache.cpp"
+},
+{
+  "directory": "/home/thetimbrick/eclipse-workspace/ModDown/build",
+  "command": "/usr/bin/c++  -I/home/thetimbrick/eclipse-workspace/ModDown/include -g -std=c++17 -g -std=gnu++17 -o CMakeFiles/ModDown.dir/src/MinecraftDownload.cpp.o -c /home/thetimbrick/eclipse-workspace/ModDown/src/MinecraftDownload.cpp",
+  "file": "/home/thetimbrick/eclipse-workspace/ModDown/src/MinecraftDownload.cpp"
+},
+{
+  "directory": "/home/thetimbrick/eclipse-workspace/ModDown/build",
+  "command": "/usr/bin/c++  -I/home/thetimbrick/eclipse-workspace/ModDown/include -g -std=c++17 -g -std=gnu++17 -o CMakeFiles/ModDown.dir/src/Request.cpp.o -c /home/thetimbrick/eclipse-workspace/ModDown/src/Request.cpp",
+  "file": "/home/thetimbrick/eclipse-workspace/ModDown/src/Request.cpp"
+},
+{
+  "directory": "/home/thetimbrick/eclipse-workspace/ModDown/build",
+  "command": "/usr/bin/c++  -I/home/thetimbrick/eclipse-workspace/ModDown/include -g -std=c++17 -g -std=gnu++17 -o CMakeFiles/ModDown.dir/src/Unpack.cpp.o -c /home/thetimbrick/eclipse-workspace/ModDown/src/Unpack.cpp",
+  "file": "/home/thetimbrick/eclipse-workspace/ModDown/src/Unpack.cpp"
+},
+{
+  "directory": "/home/thetimbrick/eclipse-workspace/ModDown/build",
+  "command": "/usr/bin/c++  -I/home/thetimbrick/eclipse-workspace/ModDown/include -g -std=c++17 -g -std=gnu++17 -o CMakeFiles/ModDown.dir/src/main.cpp.o -c /home/thetimbrick/eclipse-workspace/ModDown/src/main.cpp",
+  "file": "/home/thetimbrick/eclipse-workspace/ModDown/src/main.cpp"
+}
+]

@@ -1,6 +1,7 @@
 # Includes
 include(FindDoxygen)
 include(FindPkgConfig)
+find_package(PkgConfig REQUIRED)
 
 ## Sets the project variables ##
 cmake_minimum_required(VERSION 3.16)
@@ -18,9 +19,9 @@ else()
 endif()
 message(STATUS "Detected architecture: ${ARCHITECTURE}")
 
-project (ModDown VERSION "2.0")
+project (ModDown VERSION "2.01")
 set (CMAKE_BUILD_TYPE Debug)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -48,7 +49,7 @@ find_library(CURL curl libcurl)
 find_library(ZIP zip libzip)
 find_library(PTHREAD pthread libpthread)
 
-
+pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_search_module(nlohmann_json REQUIRED nlohmann_json>=3.10.5)
 pkg_search_module(indicators REQUIRED indicators>=2.2.0)
 
@@ -57,8 +58,8 @@ file (GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/
 file (GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.hpp" "${CMAKE_SOURCE_DIR}/include/*.inl")
 
 add_executable (ModDown ${SOURCES} ${HEADERS})
-target_link_libraries(ModDown ${CURL} ${ZIP} ${PTHREAD})
-target_include_directories(ModDown PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(ModDown ${CURL} ${ZIP} ${PTHREAD} ${GLIB_LDFLAGS})
+target_include_directories(ModDown PUBLIC ${CMAKE_SOURCE_DIR}/include PRIVATE ${GLIB_INCLUDE_DIRS})
 target_compile_options(ModDown PUBLIC "-std=c++17" "-g" )
 include(GNUInstallDirs)
 ## Adds installation instructions ##
